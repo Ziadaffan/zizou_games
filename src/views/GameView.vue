@@ -23,19 +23,19 @@ const initializeGame = async () => {
     error.value = null
 
     await gameStore.loadGame(gameId, authStore.userId || undefined)
-    await gameStore.connectWebSocket()
+    await (gameStore as any).connectWebSocket()
 
     if (gameStore.mySymbol === 'X') {
-      gameStore.createRoom(gameId)
+      (gameStore as any).createRoom(gameId)
     } else if (gameStore.mySymbol === 'O') {
-      gameStore.joinRoom(gameId)
+      (gameStore as any).joinRoom(gameId)
     } else {
       if (gameStore.playerXId === gameStore.myPlayerId) {
         gameStore.mySymbol = 'X'
-        gameStore.createRoom(gameId)
+        (gameStore as any).createRoom(gameId)
       } else if (gameStore.playerOId === gameStore.myPlayerId) {
         gameStore.mySymbol = 'O'
-        gameStore.joinRoom(gameId)
+        (gameStore as any).joinRoom(gameId)
       }
     }
   } catch (err: any) {
@@ -57,23 +57,23 @@ const startRetrying = () => {
   retrying.value = true
 
   retryInterval = window.setInterval(async () => {
-    if (!gameStore.isConnected) {
+    if (!(gameStore as any).isConnected) {
       try {
-        await gameStore.connectWebSocket()
+        await (gameStore as any).connectWebSocket()
       } catch (err) {
         console.warn('Retry failed:', err)
       }
     }
 
-    if (gameStore.isConnected) {
+    if ((gameStore as any).isConnected) {
       if (gameId) {
         if (gameStore.mySymbol === 'X') {
-          gameStore.createRoom(gameId)
+          (gameStore as any).createRoom(gameId)
         } else if (gameStore.mySymbol === 'O') {
-          gameStore.joinRoom(gameId)
+          (gameStore as any).joinRoom(gameId)
         }
       }
-      if (gameStore.playersInRoom >= 2) {
+      if ((gameStore as any).playersInRoom >= 2) {
         stopRetrying()
       }
     }
@@ -93,13 +93,13 @@ const retryConnection = async () => {
   error.value = null
   retrying.value = true
   try {
-    if (gameStore.ws) gameStore.ws.disconnect()
-    await gameStore.connectWebSocket()
+    if ((gameStore as any).ws) (gameStore as any).ws.disconnect()
+    await (gameStore as any).connectWebSocket()
     if (gameId) {
       if (gameStore.mySymbol === 'X') {
-        gameStore.createRoom(gameId)
+        (gameStore as any).createRoom(gameId)
       } else if (gameStore.mySymbol === 'O') {
-        gameStore.joinRoom(gameId)
+        (gameStore as any).joinRoom(gameId)
       }
     }
   } catch (err: any) {
@@ -115,13 +115,13 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  if (gameStore.ws) gameStore.ws.disconnect()
+  if ((gameStore as any).ws) (gameStore as any).ws.disconnect()
   stopRetrying()
 })
 
 // Watch connection and players in room
 watch(
-  () => [gameStore.isConnected, gameStore.playersInRoom],
+  () => [(gameStore as any).isConnected, (gameStore as any).playersInRoom] as [boolean, number],
   ([connected, players]) => {
     if (!connected || players < 2) {
       startRetrying()
@@ -142,12 +142,12 @@ watch(
     <div v-if="loading" class="loading">Loading game...</div>
 
     <div v-else>
-      <div class="connection-status" :class="{ connected: gameStore.isConnected }">
-        {{ gameStore.isConnected ? '● Connected' : '○ Disconnected' }}
-        <span v-if="gameStore.isConnected">
-          ({{ gameStore.playersInRoom }} player{{ gameStore.playersInRoom !== 1 ? 's' : '' }} in room)
+      <div class="connection-status" :class="{ connected: (gameStore as any).isConnected }">
+        {{ (gameStore as any).isConnected ? '● Connected' : '○ Disconnected' }}
+        <span v-if="(gameStore as any).isConnected">
+          ((gameStore as any).playersInRoom) player{{ (gameStore as any).playersInRoom !== 1 ? 's' : '' }} in room
         </span>
-        <span v-if="retrying && gameStore.playersInRoom < 2" class="retrying-text">
+        <span v-if="retrying && (gameStore as any).playersInRoom < 2" class="retrying-text">
           Retrying connection...
         </span>
       </div>
@@ -162,7 +162,7 @@ watch(
         </button>
       </div>
 
-      <div v-if="gameStore.playersInRoom < 2" class="waiting">
+      <div v-if="(gameStore as any).playersInRoom < 2" class="waiting">
         Waiting for players...
       </div>
 
