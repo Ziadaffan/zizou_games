@@ -6,11 +6,12 @@ import { GameWebSocket, type WebSocketMessage } from '../services/websocket'
 export const useGameStore = defineStore('game', () => {
   // State
   const currentGame = ref<Game | null>(null)
-  const board = ref<(('X' | 'O' | null)[])[][]>([
+  const board = ref<any>([
     [null, null, null],
     [null, null, null],
     [null, null, null],
   ])
+
   const currentPlayer = ref<'X' | 'O' | null>(null)
   const winner = ref<'X' | 'O' | 'DRAW' | null>(null)
   const gameStatus = ref<'waiting' | 'ongoing' | 'finished'>('waiting')
